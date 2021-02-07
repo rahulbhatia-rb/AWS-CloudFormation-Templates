@@ -24,7 +24,7 @@ Mappings:
 Conditions:
         CreateElasticIP: !Equals [!Ref InstanceTypeEnvironment, dev]
         CreateDevSG: !Equals [!Ref InstanceTypeEnvironment, dev]
-
+        CreateProdSG: !Equals [!Ref InstanceTypeEnvironment, prod]
 
 Resources:
         MyVMInstance:
@@ -39,7 +39,7 @@ Resources:
                         - !Ref InstanceTypeEnvironment
                         - instanceType
                         KeyName: !Ref KeyPair
-                        SecurityGroups: !If [CreateDevSG, [!Ref DevEnvSecurityGroup], !Ref AWS::NoValue]
+                        SecurityGroups: !If [CreateDevSG, [!Ref DevEnvSecurityGroup], [!Ref ProdEnvSecurityGroup]]
         DevEnvSecurityGroup:
                 Type: AWS::EC2::SecurityGroup
                 Properties:
@@ -49,4 +49,16 @@ Resources:
                                   FromPort: 22
                                   ToPort: 22
                                   CidrIp: 0.0.0.0/0
-                               
+        ProdEnvSecurityGroup:
+                Type: AWS::EC2::SecurityGroup
+                Properties:
+                        GroupDescription: Prod SG
+                        SecurityGroupIngress:
+                                - IpProtocol: tcp
+                                  FromPort: 22
+                                  ToPort: 22
+                                  CidrIp: 0.0.0.0/0
+ 
+                                    
+
+
