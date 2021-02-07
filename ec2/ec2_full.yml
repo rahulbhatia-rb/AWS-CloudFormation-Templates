@@ -1,0 +1,46 @@
+Parameters:
+        InstanceTypeParam:
+                Type: String
+                Default: t2.micro
+                AllowedValues:
+                        - t2.micro
+                        - t2.nano
+                        - m1.large
+                Description: Choose the Instance Type
+        AvalabilityZoneParam:
+                Type: String
+                Default: us-east-1a
+                Description: Choose the Avalability Zone
+                AllowedValues:
+                        - us-east-1b
+                        - us-east-1c
+                        - us-east-1a
+        KeyPair:
+                Type: AWS::EC2::KeyPair::KeyName
+                Description: Choose the KeyPair to connect to the instance
+Resources:
+        MyEC2Instance:
+                Type: AWS::EC2::Instance
+                Properties:
+                        ImageId: ami-096fda3c22c1c990a
+                        AvailabilityZone: !Ref AvalabilityZoneParam
+                        InstanceType: !Ref InstanceTypeParam
+                        KeyName: !Ref KeyPair
+                        SecurityGroups:
+                                - default
+                                - !Ref MySecurityGroup
+        MySecurityGroup:
+                Type: AWS::EC2::SecurityGroup
+                Properties:
+                        GroupDescription: "Creating this using cloud fomration for port 80 and 22"
+                        GroupName: "Sg using CloudFormation"
+                        SecurityGroupIngress:
+                                - IpProtocol: tcp
+                                  FromPort: 80
+                                  ToPort: 80
+                                  CidrIp: 0.0.0.0/0
+                                - IpProtocol: tcp
+                                  FromPort: 22
+                                  ToPort: 22
+                                  CidrIp: 0.0.0.0/0
+

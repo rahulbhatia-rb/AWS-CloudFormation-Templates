@@ -1,0 +1,23 @@
+Parameters:
+        KeyPair:
+                Type: AWS::EC2::KeyPair::KeyName
+                Description: Choose the KeyPair to connect to the instance
+
+Mappings:
+        MyRegionMap:
+                us-east-1:
+                        AmiId: ami-047a51fa27710816e
+                us-west-2:
+                        AmiId: ami-0e999cbd62129e3b1 
+
+Resources:
+        MyVMInstance:
+                Type: AWS::EC2::Instance
+                Properties:
+                        ImageId: !FindInMap
+                        - MyRegionMap
+                        - !Ref 'AWS::Region'
+                        - AmiId
+                        InstanceType: t2.micro
+                        KeyName: !Ref KeyPair
+

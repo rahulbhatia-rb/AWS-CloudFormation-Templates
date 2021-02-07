@@ -1,0 +1,10 @@
+Resources:
+        SampleEC2Instance:
+                Type: 'AWS::EC2::Instance'
+                Properties:
+                        ImageId: ami-01e78c5619c5e68b4
+                        InstanceType: t2.micro
+                        SecurityGroupsIds:
+                                - sg-0495e9e25f7f22e10
+                        KeyName: rhel8-key
+
