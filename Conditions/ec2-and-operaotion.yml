@@ -1,0 +1,68 @@
+Parameters:
+        InstanceTypeEnvironment:
+                Type: String
+                Default: dev
+                AllowedValues:
+                        - dev
+                        - prod
+                        - qa
+                Description: Choose Your Environment
+Mappings:
+        MyRegionMap:
+                us-east-1:
+                        AmiId: ami-047a51fa27710816e
+                us-west-2:
+                        AmiId: ami-0e999cbd62129e3b1
+        MyEnvironmentMap:
+                dev:
+                        instanceType: t2.micro
+                prod:
+                        instanceType: t2.small
+                qa:
+                        instanceType: t2.micro
+
+Conditions:
+        CreateElasticIP: !Equals [!Ref InstanceTypeEnvironment, dev]
+        CreateDevSG: !Equals [!Ref InstanceTypeEnvironment, dev]
+        CreateProdSG: !Not [{Condition: CreateDevSG}]
+        #IfRegionUseKeyName: !Or [!Equals [!Ref 'AWS::Region',us-east-1], !Equals [!Ref 'AWS::Region', us-west-2]]
+
+        IfRegionUseKeyName: !And [!Equals [!Ref 'AWS::Region',us-east-1], !Equals [!Ref InstanceTypeEnvironmemnt, dev]]
+Resources:
+        MyVMInstance:
+                Type: AWS::EC2::Instance
+                Properties:
+                        ImageId: !FindInMap
+                        - MyRegionMap
+                        - !Ref 'AWS::Region'
+                        - AmiId
+                        InstanceType: !FindInMap
+                        - MyEnvironmentMap
+                        - !Ref InstanceTypeEnvironment
+                        - instanceType
+                        KeyName: !If [IfRegionUseKeyName , key-1, key-2]
+                        SecurityGroups: !If [CreateDevSG, [!Ref DevEnvSecurityGroup], [!Ref ProdEnvSecurityGroup]]
+        DevEnvSecurityGroup:
+                Type: AWS::EC2::SecurityGroup
+                Properties:
+                        GroupDescription: Dev SG
+                        SecurityGroupIngress:
+                                - IpProtocol: tcp
+                                  FromPort: 22
+                                  ToPort: 22
+                                  CidrIp: 0.0.0.0/0
+        ProdEnvSecurityGroup:
+                Type: AWS::EC2::SecurityGroup
+                Properties:
+                        GroupDescription: Prod SG
+                        SecurityGroupIngress:
+                                - IpProtocol: tcp
+                                  FromPort: 22
+                                  ToPort: 22
+                                  CidrIp: 0.0.0.0/0
+
+
+ 
+                                    
+
+
