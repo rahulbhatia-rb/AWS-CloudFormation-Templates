@@ -1,7 +1,4 @@
 Parameters:
-        KeyPair:
-                Type: AWS::EC2::KeyPair::KeyName
-                Description: Choose the KeyPair to connect to the instance
         InstanceTypeEnvironment:
                 Type: String
                 Default: dev
@@ -28,7 +25,7 @@ Conditions:
         CreateElasticIP: !Equals [!Ref InstanceTypeEnvironment, dev]
         CreateDevSG: !Equals [!Ref InstanceTypeEnvironment, dev]
         CreateProdSG: !Not [{Condition: CreateDevSG}]
-
+        IfRegionUseKeyName: !Or [!Equals [!Ref 'AWS::Region',us-east-1], !Equals [!Ref 'AWS::Region', us-west-2]]
 Resources:
         MyVMInstance:
                 Type: AWS::EC2::Instance
@@ -41,7 +38,7 @@ Resources:
                         - MyEnvironmentMap
                         - !Ref InstanceTypeEnvironment
                         - instanceType
-                        KeyName: !Ref KeyPair
+                        KeyName: !If [IfRegionUseKeyName , key-1, key-2]
                         SecurityGroups: !If [CreateDevSG, [!Ref DevEnvSecurityGroup], [!Ref ProdEnvSecurityGroup]]
         DevEnvSecurityGroup:
                 Type: AWS::EC2::SecurityGroup
