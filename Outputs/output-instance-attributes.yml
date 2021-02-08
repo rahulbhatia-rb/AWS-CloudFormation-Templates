@@ -1,0 +1,43 @@
+Parameters:
+        KeyPair:
+                Type: AWS::EC2::KeyPair::KeyName
+                Description: Choose the KeyPair to connect to the instance
+        InstanceTypeEnvironment:
+                Type: String
+                Default: dev
+                AllowedValues:
+                        - dev
+                        - prod
+                Description: Choose Your Environment
+Mappings:
+        MyRegionMap:
+                us-east-1:
+                        AmiId: ami-047a51fa27710816e
+                us-west-2:
+                        AmiId: ami-0e999cbd62129e3b1
+        MyEnvironmentMap:
+                dev:
+                        instanceType: t2.micro
+                prod:
+                        instanceType: t2.small
+Resources:
+        MyVMInstance:
+                Type: AWS::EC2::Instance
+                Properties:
+                        ImageId: !FindInMap
+                        - MyRegionMap
+                        - !Ref 'AWS::Region'
+                        - AmiId
+                        InstanceType: !FindInMap
+                        - MyEnvironmentMap
+                        - !Ref InstanceTypeEnvironment
+                        - instanceType
+                        KeyName: !Ref KeyPair
+
+Outputs:
+        MyInstanceId:
+                Description: My Instance ID
+                Value: !Ref MyVMInstance
+        MyInstanceAttributes:
+                Description: My Instance AZ
+                Value: !GetAtt MyVMInstance.AvailabilityZone
