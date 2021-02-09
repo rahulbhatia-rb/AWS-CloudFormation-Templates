@@ -1,0 +1,25 @@
+Parameters:
+        MyKeyName:
+                Type: AWS::EC2::KeyPair::KeyName
+Resources:
+        MySecurityGroup:
+                Type: AWS::EC2::SecurityGroup
+                Properties:
+                        GroupDescription: My SG with port 22 and port 8080 inbound
+                        SecurityGroupIngress:
+                                - IpProtocol: tcp
+                                  FromPort: 22
+                                  ToPort: 22
+                                  CidrIp: 0.0.0.0/0
+                                - IpProtocol: tcp
+                                  FromPort: 8080
+                                  ToPort: 8080
+                                  CidrIp: 0.0.0.0/0
+        MyVMInstance:
+                Type: AWS::EC2::Instance
+                Properties:
+                        ImageId: ami-096fda3c22c1c990a 
+                        InstanceType: t2.micro
+                        KeyName: !Ref MyKeyName
+                        SecurityGroups:
+                                - !Ref MySecurityGroup
