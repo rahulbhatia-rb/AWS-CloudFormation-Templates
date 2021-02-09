@@ -1,0 +1,80 @@
+Metadata:
+        AWS::CloudFormation::Interface:
+                ParameterGroups:
+                        - Label:
+                                default: "EC2 Instance Configuration"
+                          Parameters:
+                                  - InstanceTypeEnvironment
+                        - Label:
+                                default: "Environment Configuration"
+                          Parameters:
+                                  - KeyPair
+                ParameterLabels:
+                        InstanceTypeEnvironment:
+                                default: "Which Environment are we planning to deploy our task too"
+                        KeyPair:
+                                default: "Be Aware once Key Pair is chosen, you can't change it"
+                                    
+Parameters:
+        KeyPair:
+                Type: AWS::EC2::KeyPair::KeyName
+                Description: Choose the KeyPair to connect to the instance
+        InstanceTypeEnvironment:
+                Type: String
+                Default: dev
+                AllowedValues:
+                        - dev
+                        - prod
+                Description: Choose Your Environment
+Mappings:
+        MyRegionMap:
+                us-east-1:
+                        AmiId: ami-047a51fa27710816e
+                us-west-2:
+                        AmiId: ami-0e999cbd62129e3b1
+        MyEnvironmentMap:
+                dev:
+                        instanceType: t2.micro
+                prod:
+                        instanceType: t2.small
+
+Conditions:
+        CreateDevSG: !Equals [!Ref InstanceTypeEnvironment, dev]
+        CreateProdSG: !Equals [!Ref InstanceTypeEnvironment, prod]
+
+Resources:
+        MyVMInstance:
+                Type: AWS::EC2::Instance
+                Properties:
+                        ImageId: !FindInMap
+                        - MyRegionMap
+                        - !Ref 'AWS::Region'
+                        - AmiId
+                        InstanceType: !FindInMap
+                        - MyEnvironmentMap
+                        - !Ref InstanceTypeEnvironment
+                        - instanceType
+                        KeyName: !Ref KeyPair
+                        SecurityGroups:
+                                - Default
+                                - !If [CreateDevSG, [!Ref DevSecurityGroup], !Ref AWS::NoValue]
+                        UserData:
+                                Fn::Base64: |
+                                        #!/bin/bash
+                                        sudo yum update
+                                        sudo yum upgrade
+                                        sudo yum install php -y
+                                        sudo yum install httpd -y
+                                        touch /var/www/html/index.php
+                                        echo "Hello World I am PHP script" >> /var/www/html/index.php
+        DevSecurityGroup:
+                Type: AWS::EC2::SecurityGroup
+                Properties:
+                        GroupDescription: Security group for HTTP port 80
+                        SecurityGroupIngress:
+                                - IpProtocol: tcp
+                                  FromPort: 80
+                                  ToPort: 80
+                                  CidrIp: 0.0.0.0/0
+
+
