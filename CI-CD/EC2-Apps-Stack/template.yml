@@ -1,0 +1,48 @@
+Parameters:
+        KeyName:
+                Description: Key Name to ssh to Vm's
+                Type: AWS::EC2::KeyPair::KeyName
+Resources:
+        MySecurityGroup:
+                Type: "AWS::EC2::SecurtyGroup"
+                Properties:
+                        GroupDescription: "This is a new security Group"
+                        GroupName: "Hello world"
+                        SecurityGroupIngress:
+                                - IpProtocol: tcp
+                                  FromPort: 22
+                                  ToPort: 22
+                                  CidrIp: 0.0.0.0/0
+                                - IpProtocol: tcp
+                                  FromPort: 8080
+                                  ToPort: 8080
+                                  CidrIp: 0.0.0.0/0
+         MyStageVMInstance:
+                 Type: AWS::EC2::Instance
+                 Properties:
+                         ImageId: ami-047a51fa27710816e
+                         InstanceType: t2.micro
+                         KeyName: !Ref KeyName
+                         SecurityGroups:
+                                 - !Ref MySecurityGroup
+                         IamInstanceProfile:
+                         Tags:
+                                 - Key: Name
+                                   Value: dev
+                                 - Key: Name
+                                   value: stage
+                         UserData:
+                                 Fn::Base64: |
+                                         #!/bin/bash
+                                         sudo yum update
+                                         sudo yum install ruby
+                                         sudo yum install wget
+                                         sudo yum -y erase java-1.7.0-openjdk.x86_64
+                                         sudo yum -y install java-1.8.0-openjdk.x86_64
+                                         sudo yum -y install java-1.8.0-openjdk-devel
+                                         sudo yum -y install tomcat8
+                                         cd /home/ec2-user
+                                         wget https://aws-codedeploy-us-east-2.s3.amazonaws.com/latest/install
+                                         chmod +x ./install
+                                         sudo ./install auto
+

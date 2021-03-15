@@ -1,0 +1,47 @@
+Parameters:
+        Key:
+                Type: AWS::EC2::KeyPair::KeyName
+                Description: Enter the Key Pair name
+        DeviceName:
+                Type: String
+                Description: Enter the device name for EBS Volume Attachment 
+                AllowedValues:
+                        - /dev/sdh
+                        - xvdh
+Resources:
+        SecurityGroup0:
+                Type: AWS::EC2::SecurityGroup
+                Properties:
+                        GroupDescription: my new SSH SG
+                        SecurityGroupIngress:
+                                - IpProtocol: tcp
+                                  FromPort: '22'
+                                  ToPort: '22'
+                                  CidrIp: 0.0.0.0/0
+                                - IpProtocol: tcp
+                                  FromPort: '80'
+                                  ToPort: '80'
+                                  CidrIp: 0.0.0.0/0
+        DevEC2Instance:
+                Type: AWS::EC2::Instance
+                Properties:
+                        ImageId: ami-096fda3c22c1c990a
+                        InstanceType: t2.micro
+                        KeyName: !Ref Key
+                        SecurityGroups:
+                                - !Ref SecurityGroup0
+        EBSVolume:
+                Type: AWS::EC2::Volume
+                Properties:
+                        AvailabilityZone: !GetAtt DevEC2Instance.AvailabilityZone
+                        Size: 1
+        EBSVolumeAttachment:
+                Type: AWS::EC2::VolumeAttachment
+                Properties:
+                        Device: !Ref DeviceName 
+                        InstanceId: !Ref DevEC2Instance
+                        VolumeId: !Ref EBSVolume
+
+
+
+
