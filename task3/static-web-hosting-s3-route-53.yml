@@ -1,0 +1,37 @@
+Parameters:
+        S3BucketName:
+                Type: String
+                Description: |
+                        Name of S3 bucket, make sure it is the same as that of domain name
+                        For example if the domain is- abc.tk the bucket name should be the same abc.tk
+        HostedZoneIdForS3:
+                Type: String
+                Description: Specify the hosted zone ID for the region that you created the bucket in, refer https://docs.aws.amazon.com/general/latest/gr/s3.html#s3_website_region_endpoints
+#        HostedZoneId:
+#                Type: AWS::Route53::HostedZone::Id
+#                Description: An Amazon Route 53 hosted zone ID
+
+Resources:
+        MyS3Bucket:
+                Type: AWS::S3::Bucket
+                Properties:
+                        BucketName: !Ref S3BucketName
+                        WebsiteConfiguration:
+                                 ErrorDocument: error.html
+                                 IndexDocument: index.html
+                        AccessControl: PublicRead
+                        VersioningConfiguration:
+                                 Status: Enabled
+        MyHostedZone:
+                Type: AWS::Route53::HostedZone
+                Properties:
+                        Name: !Ref S3BucketName
+        MyRecordName:
+                Type: AWS::Route53::RecordSet
+                Properties:
+                        AliasTarget:
+                                 DNSName: !Sub s3-website-${AWS::Region}.amazonaws.com
+                                 HostedZoneId: !Ref HostedZoneIdForS3
+                        HostedZoneId: !GetAtt MyHostedZone.Id
+                        Name: !Ref S3BucketName
+                        Type: A
